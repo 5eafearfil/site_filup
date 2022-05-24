@@ -1,0 +1,10 @@
+.head_logo_txt{padding-left:120px}
+.Level-sct,.faq{width:100%}
+.qestion{text-align:center}
+.foot_frame{display:none}
+.adms{display:inherit!important}
+.game-content{width:70%}
+.game-mode-range{max-width: 690px}
+.game-start__wrapNone::before {
+	display: none;
+}
