@@ -1,0 +1,2 @@
+const messageConsoleTitle = 'Внимание!!!!!',messageConsoleText = 'Данный раздел браузера предназначен для разработчиков. Если вам сообщили, что скопировав и вставив сюда что-либо вы что-то получите, то это мошенничество, которое может дать злоумышленнику доступ к вашему аккаунту 1dice.net. Настоятельно рекомендуем покинуть данный раздел.';
+console.log("%c%s",'color:red; font-size:46px; font-weight:700; text-transform:uppercase;', messageConsoleTitle);console.log("%c%s",'color:#000; font-size:26px; font-weight:400; ', messageConsoleText);

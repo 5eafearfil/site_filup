@@ -1,0 +1,183 @@
+
+var socket = io('/index');
+var game = io('/game');
+
+
+let array = {
+	id: $('#tokens').attr('user'), 
+	token: $('#tokens').attr('token')
+}
+
+
+//
+
+game.emit('userId' , array);
+
+///
+
+game.on('openModal' , function(data) {
+  openModalWinner(data);
+});
+
+
+function openModalWinner(data) {
+   
+   let block = '';
+   let id = data.game;
+
+   block += '<div modal = '+id+' class="modal-rooms">';
+   block += '<button class="modal-rooms_exit">x</button>';
+   block += '<article class="modal-rooms_cont">';
+   block += '<h2 class="modal-rooms_title">Игра №'+id+' <span>- «Комнаты»</span></h2>';
+   block += '<p class="modal-rooms_txt modal-rooms_txt__final">Завершена!</p>';
+   block += '<p class="modal-rooms_txt modal-rooms_txt__top">Общий банк:  <span>'+data.bank+' D.</span></p>';
+   block += '<a href="/?action=room&id='+id+'" class="modal-rooms_link">Перейти в комнату</a>';
+   block += '</article>';
+   block += '<div class="modal-rooms_cont modal-rooms_cont__adpative">';
+   block += '<div class="room-cont-art">';
+   block += '<picture class="room-cont-art_img room-cont-art_img__winner">';
+   block += '<img class="newPhoto" src="'+data.photo+'" alt="Фото профиля игрока">';
+   block += '<source srcset="'+data.photo+'">';
+   block += '</picture>';
+   block += '<div class="modal-rooms-text">';
+   block += '<p class="room-cont-art_title"><a target="_blank" href="/?action=user&id='+data.id+' ">'+data.name+'</a></p>';
+   block += '<p class="modal-rooms_prize">Победитель!</p>';
+   block += '</div></div></div></div>';
+
+   $('.modal-room_cont').prepend(block);
+
+   let modalRoom = document.querySelectorAll('.modal-rooms'),
+    modalRoomClouse = document.querySelectorAll('.modal-rooms .modal-rooms_exit'),
+    modalRoomCont = document.querySelectorAll('.modal-rooms .room-cont-art'),
+    modalRoomInsert = document.querySelectorAll('.modal-rooms .modal-rooms_txt__final'),
+    modalRoomDeleted = document.querySelectorAll('.modal-rooms .modal-rooms_cont__adpative'),
+    documentWidth = document.querySelector('body').offsetWidth;
+
+
+  for (let i = 0; i < modalRoomClouse.length; i++) {
+    modalRoomClouse[i].addEventListener('click', function() {
+      modalRoom[i].classList.add('modal-room_hidden')
+    })
+  }
+
+  function reconstructionModal() {
+    if (documentWidth <= 670) {
+      for (let i = 0; i < modalRoomCont.length; i++) {
+        modalRoomInsert[i].after(modalRoomCont[i])
+        modalRoomDeleted[i].remove();
+      }
+    }
+  }
+  reconstructionModal();
+
+
+
+   setTimeout(function() {
+    $('*[modal="'+id+'"]').remove();
+   } , 10000);
+   
+}
+
+$('body').on('click' ,'.modal-rooms_exit' ,  function(event) {
+  event.preventDefault();
+  $(this).parent().remove();
+});
+
+
+///
+
+
+socket.on('create_games', function(data){
+ 	createTable(data);
+});	
+
+
+socket.on('stats', function(data){
+
+ 	$('#gm_users_total').html(data.users);
+ 	$('#gm_bets_total').html(data.games);
+ 	$('#gm_users_online').html(data.online);
+ 	$('#gm_bets_amount').html(data.summa);
+
+});	
+
+
+function insertBlockgame(data) {
+
+  let table = '';
+  let new_class, winner;
+
+  if (data.win == '1' || data.win == '3') {
+
+      new_class = "table_content transform green";
+      winner = '+ '+data.money+ ' D.';
+
+  }else{
+
+    new_class = "table_content transform red";
+    winner = '- '+data.stavka+ ' D.';
+
+  }
+
+  ///
+
+  let icon = '';
+
+  if (data.chislo == 'DICE') {
+
+    icon = 'dicesRangeP';
+
+  }else if (data.chislo == 'WHEEL') {
+
+    icon = 'wheelModeP';
+
+  }else if (data.chislo == 'RAGE') {
+
+    icon = 'rageIconP';
+    
+  }
+
+  table += "<tr class='table_bbg'>";
+  table += "<td class='none'>"+data.id+"</td>";
+  table += "<td><a href='/?action=user&id=" + data.user_id + "' class='linked'> " + data.user_name + " </a></td>";
+  table += "<td class='none'>"+data.time+"</td>";
+  table += "<td>"+data.stavka+" D.</td>";
+  table += "<td class='none'><img src='/img/"+icon+".png' width='15'></td>";
+  table += "<td class='none'>"+data.vip+"x</td>";
+  //table += "<td class='none'>"+data.chance+"%</td>";
+  table += "<td class='"+new_class+"' >"+winner+"</td> </tr>";
+
+  //
+
+  return table;
+}
+
+async function createTable(data) {
+
+  if ($('#vremenno').length > 0) {
+    $('#vremenno').remove();
+  }
+
+  ///
+
+  let datas = [data] , table = '';
+
+  for(key in datas){
+    table += await insertBlockgame(datas[key]);
+  }
+
+  ///
+
+	$('#table').prepend(table);
+
+  ///
+
+	if ($('#table tr').length > 9) {
+           document.getElementById('table').deleteRow(-1);
+
+          if ($('#table tr').length > 9) {
+             document.getElementById('table').deleteRow(-1);
+          }
+    }
+	
+}

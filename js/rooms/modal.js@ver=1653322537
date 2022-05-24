@@ -1,0 +1,83 @@
+var game = io('/game');
+
+let array = {
+	id: $('#tokens').attr('user'), 
+	token: $('#tokens').attr('token')
+}
+
+
+//
+
+game.emit('userId' , array);
+
+/// module modals /// 
+
+
+game.on('openModal' , function(data) {
+  openModalWinner(data);
+});
+
+
+function openModalWinner(data) {
+   
+   let block = '';
+   let id = data.game;
+
+   block += '<div modal = '+id+' class="modal-rooms">';
+   block += '<button class="modal-rooms_exit">x</button>';
+   block += '<article class="modal-rooms_cont">';
+   block += '<h2 class="modal-rooms_title">Игра №'+id+' <span>- «Комнаты»</span></h2>';
+   block += '<p class="modal-rooms_txt modal-rooms_txt__final">Завершена!</p>';
+   block += '<p class="modal-rooms_txt modal-rooms_txt__top">Общий банк:  <span>'+data.bank+' D.</span></p>';
+   block += '<a href="/?action=room&id='+id+'" class="modal-rooms_link">Перейти в комнату</a>';
+   block += '</article>';
+   block += '<div class="modal-rooms_cont modal-rooms_cont__adpative">';
+   block += '<div class="room-cont-art">';
+   block += '<picture class="room-cont-art_img room-cont-art_img__winner">';
+   block += '<img class="newPhoto" src="'+data.photo+'" alt="Фото профиля игрока">';
+   block += '<source srcset="'+data.photo+'">';
+   block += '</picture>';
+   block += '<div class="modal-rooms-text">';
+   block += '<p class="room-cont-art_title"><a target="_blank" href="/?action=user&id='+data.id+' ">'+data.name+'</a></p>';
+   block += '<p class="modal-rooms_prize">Победитель!</p>';
+   block += '</div></div></div></div>';
+
+   $('.modal-room_cont').prepend(block);
+
+   let modalRoom = document.querySelectorAll('.modal-rooms'),
+    modalRoomClouse = document.querySelectorAll('.modal-rooms .modal-rooms_exit'),
+    modalRoomCont = document.querySelectorAll('.modal-rooms .room-cont-art'),
+    modalRoomInsert = document.querySelectorAll('.modal-rooms .modal-rooms_txt__final'),
+    modalRoomDeleted = document.querySelectorAll('.modal-rooms .modal-rooms_cont__adpative'),
+    documentWidth = document.querySelector('body').offsetWidth;
+
+
+  for (let i = 0; i < modalRoomClouse.length; i++) {
+    modalRoomClouse[i].addEventListener('click', function() {
+      modalRoom[i].classList.add('modal-room_hidden')
+    })
+  }
+
+  function reconstructionModal() {
+    if (documentWidth <= 670) {
+      for (let i = 0; i < modalRoomCont.length; i++) {
+        modalRoomInsert[i].after(modalRoomCont[i])
+        modalRoomDeleted[i].remove();
+      }
+    }
+  }
+  reconstructionModal();
+
+
+   setTimeout(function() {
+    $('*[modal="'+id+'"]').remove();
+   } , 10000);
+   
+}
+
+$('body').on('click' ,'.modal-rooms_exit' ,  function(event) {
+  event.preventDefault();
+  $(this).parent().remove();
+});
+
+///

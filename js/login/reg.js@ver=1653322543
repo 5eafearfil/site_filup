@@ -1,0 +1,236 @@
+
+/// domain ///
+
+var domain = window.location.hostname;
+
+////
+
+$('body').on('submit', '#authForm', function(event) {
+	event.preventDefault();
+
+	let button = $('.authButton');
+
+	///
+
+	button.text('Загрузка...');
+	button.prop('disabled' , true);
+
+	///
+
+	let data = $('#authForm').serialize();
+
+	$.post('/app/login/reg.php' , data , function(data) {
+
+		if (data.status == '200') {
+
+			showModal('Регистрация прошла успешно! Переадресация...' , 'green');
+
+			setTimeout(function() {
+				window.location.replace('https://'+domain);
+			} , 500)
+
+		}else {
+			showModal(data.status , 'red');
+			$('#reg_pass').val('');
+
+			if (data.error == 'email') {
+				 $('#email_error').addClass('redBorder');
+
+			}else if (data.error == 'login') {
+
+				$('#login_error').addClass('redBorder');
+
+			}else if (data.error == 'password') {
+				$('.error_password').addClass('redBorder');
+			}
+
+			setTimeout(function() {
+				  $('.redBorder').removeClass('redBorder')
+			 } , 5000)
+
+            ///
+
+	        button.text('Регистрация');
+	        button.prop('disabled' , false);
+
+	        ///
+		}
+
+		grecaptcha.reset(feedbackCaptcha)
+		
+	})
+	
+});
+
+////
+
+$('body').on('submit', '#resetForm', function(event) {
+	event.preventDefault();
+
+	let button = $('.resetButton');
+
+	///
+
+	button.text('Загрузка...');
+	button.prop('disabled' , true);
+
+	///
+
+	let data = $('#resetForm').serialize();
+
+	$.post('/app/login/reset.php' , data , function(data) {
+
+		if (data.status == '200') {
+
+			showModal('Успешно ! Письмо отправлено на почту ! ' , 'green');
+			$('.emailInput').val('');
+			$('.modal-overflow').addClass('modal-overflow modal-overflow-clouse');
+
+		}else {
+			showModal(data.status , 'red');
+
+			if (data.error == 'email') {
+				$('#email_error').addClass('redBorder');
+
+				setTimeout(function() {
+				  $('.redBorder').removeClass('redBorder')
+			    } , 5000)
+			}
+
+
+		}
+
+		grecaptcha.reset(authCaptcha)
+
+		////
+
+	    button.text('Восстановить');
+	    button.prop('disabled' , false);
+
+		////
+
+		
+	})
+	
+});
+
+/////
+
+
+var feedbackCaptcha;
+var authCaptcha;
+var authUser;
+
+
+function recaptchaAuthUser() {
+
+  feedbackCaptcha = grecaptcha.render('authUser', {
+    'sitekey' : keyCaptha,
+  });
+  
+}
+
+
+function recaptchaCallbackReg() {
+
+  feedbackCaptcha = grecaptcha.render('register_captha', {
+    'sitekey' : keyCaptha,
+  });
+  
+}
+
+function recaptchaCallbackReload() {
+
+  authCaptcha = grecaptcha.render('reload_captha', {
+    'sitekey' : keyCaptha,
+  });
+  
+}
+
+
+
+///
+
+let regImg = document.querySelector('.regImg'),
+	regForm = document.querySelector('.modal-register-form'),
+	forwaredBtn = document.querySelector('.fwPass'),
+	regBtn,
+	vkHref = document.querySelectorAll('.findHref')[0].getAttribute('href'),
+	fbHref = document.querySelectorAll('.findHref')[1].getAttribute('href'),
+	okHref = document.querySelectorAll('.findHref')[2].getAttribute('href'),
+	registerForm  = $('#authForm').html(),
+	hideRegisterModal = document.querySelector('.modal-register-exit'),
+	forwaredPassBtn = document.querySelector('.auth_pass');
+
+
+
+let	callForm = document.querySelector(`.index_stat_register.index__new`),
+	modalOverflow = document.querySelectorAll('.modal-overflow'),
+	modalOverflowInit = document.querySelectorAll('.modal-overflow')[modalOverflow.length - 1],
+	ReCapthaCheck = document.querySelector('#register_captha div');
+
+	function openRegister() {
+		toggleRegister();
+		// recaptchaCallbackReg();
+		callForm.textContent = "Загрузка...";
+		ReCapthaCheck = document.querySelector('#register_captha div');
+		if (ReCapthaCheck !== null) {
+			return;
+		} else if (ReCapthaCheck == null) {
+			recaptchaCallbackReg();
+		}
+	}
+	function toggleRegister() {
+		callForm.textContent = "Регистрация";
+		modalOverflowInit.classList.toggle('modal-overflow-clouse');
+	}
+	function callFormForwared() {
+
+		toggleRegister();
+		forwaredPass();
+	}
+
+
+	forwaredPassBtn.addEventListener('click', callFormForwared);
+	hideRegisterModal.addEventListener('click', toggleRegister);
+	callForm.addEventListener('click', openRegister);
+
+
+
+	function forwaredPass() {
+		// createLet();
+
+		$('#authForm').attr('id' , 'resetForm');
+		regImg.setAttribute('src', '/img/register/ForwardModal.png');
+		regForm.innerHTML =  `
+		<h2 class='modal-register-form_title'>Восстановить пароль</h2>
+		<p class='modal-register-form_txt minText'>Введите почту, указанную при регистрации.<br> На неё мы пришлем код для восстановления<br></p>
+		<label class='modal-register-form-label mail'><input id = "email_error" type='text' placeholder='Введите почту' name='email'  class='modal-register-label_inp '></label>
+		<div id = "reload_captha" class="modal-register-form_auth"></div>
+		</div>
+		<button class='modal-register-form_btn auth_btn resetButton'>Восстановить</button> 
+		<a href='#' class='modal-register-form_link reg'>Регистрация</a>
+		`;
+
+		regBtn = document.querySelector('.reg');
+
+		recaptchaCallbackReload();
+	}
+
+	function registerBack() {
+
+
+		$('#resetForm').attr('id' , 'authForm');
+
+		regImg.setAttribute('src', '/img/register/RegisterModal.png');
+		regForm.innerHTML = registerForm;
+
+		recaptchaCallbackReg();
+	}
+
+
+	$('body').on('click', '.fwPass', forwaredPass);
+	$('body').on('click', '.reg', registerBack);
+
+///	
+

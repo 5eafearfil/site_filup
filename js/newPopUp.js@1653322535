@@ -1,0 +1,44 @@
+let popUpNew = document.querySelectorAll('.pop-up'),
+	popUpProgress = document.querySelectorAll('.pop-up_progress'),
+	modalNotification = document.querySelector('.modal-notification');
+
+ 	function hiddenPopUp() {
+		for (let i = 0; i < popUpNew.length; i++) {
+			popUpProgress[i].classList.add('pop-up__animate');
+			setTimeout(function() {
+			popUpNew[i].classList.add('pop-up__none');
+			}, 1700)
+			setTimeout(function() {
+				popUpNew[i].classList.add('pop-up__hidden');
+				popUpNew[i].remove();
+			}, 1700)
+			
+		}
+	}
+
+	function showModal(text,color) {
+		let classType;
+		if (color == 'green') {
+			classType = 'succses';
+		} else if (color == 'red') {
+			classType = 'error';
+		}
+		let modalBody = '<p class="pop-up pop-up_'+classType+' pop-up__fadeIn"><span class="pop-up_txt">'+text+'</span><span class="pop-up_progress"></span><span class="pop-up_exit" aria-label="Закрыть всплывающее окно"></span></p>';
+		modalNotification.insertAdjacentHTML('beforeend', `${modalBody}`);
+
+		popUpNew = document.querySelectorAll('.pop-up');
+		popUpProgress = document.querySelectorAll('.pop-up_progress');
+
+
+		setTimeout(hiddenPopUp,1000);
+
+		for (let i = 0; i < popUpNew.length; i++) {
+		popUpNew[i].addEventListener('click', function() {
+			popUpNew[i].classList.add('pop-up__none');
+			setTimeout(function() {
+				popUpNew[i].classList.add('pop-up__hidden');
+				popUpNew[i].remove();
+			}, 200)
+		}) 
+	}
+	}

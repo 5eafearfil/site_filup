@@ -1,0 +1,64 @@
+let findDice = document.querySelector('.findDice'),
+	findRooms = document.querySelector('.findRooms'),
+	findWheel = document.querySelector('.findWheel'),
+	findRage = document.querySelector('.findRage'),
+	findBattle = document.querySelector('.findBattle'),
+	serchUrl = window.location.href,
+	RoomsUrl = /rooms/.test(serchUrl),
+	WheelUrl = /#cricle/.test(serchUrl),
+	RageUrl = /rage/.test(serchUrl),
+	battleUrl = /battle/.test(serchUrl),
+	headMobaile = document.querySelector('.head-mobaile'),
+	bodyPad = document.querySelector('body'),
+	rangeInp = document.querySelector('.rangeFindOne'),
+	wheelHost = document.querySelector('.wheelHost');
+
+	function cleanClass() {
+		let clean = document.querySelector('.mode-block_caption__active');
+		clean.classList.remove('mode-block_caption__active');
+	}
+
+	function moveHeader() {
+		if (bodyPad.offsetWidth > 670) {return}
+		let	rect = bodyPad.getBoundingClientRect();
+		if (rect.y < -25) {
+			bodyPad.style.paddingTop = `48px`;
+			headMobaile.classList.add('head-mobaile__move');
+		} else {
+			bodyPad.style.paddingTop = `0px`;
+			headMobaile.classList.remove('head-mobaile__move');
+		}
+	}
+
+	function addClass() {
+		cleanClass();
+		if (RoomsUrl === true) {
+			findRooms.classList.add('mode-block_caption__active');
+		} else if (WheelUrl === true) {
+			findWheel.classList.add('mode-block_caption__active');
+		} else if (RageUrl === true) {
+			 findRage.classList.add('mode-block_caption__active');
+		} else if (battleUrl === true) {
+			 findBattle.classList.add('mode-block_caption__active');
+		} else if (rangeInp !== null){
+			findDice.classList.add('mode-block_caption__active');
+		}
+	}
+
+	function reloadCycle() {
+		setTimeout(wrapReloadCycle, 500);
+		function wrapReloadCycle() {
+			serchUrl = window.location.href;
+			WheelUrl = /#cricle/.test(serchUrl);
+			if (WheelUrl == true) {
+				location.reload();
+			}
+		}
+	}
+
+	if (wheelHost !== null) {
+		wheelHost.addEventListener('click', reloadCycle);
+		addClass();
+		window.addEventListener('scroll', moveHeader);
+	}
+	

@@ -1,0 +1,36 @@
+
+$('#dice_game').on('click', function () {
+	// body...
+
+
+if ($("#new_test tbody").html() === '') {
+
+$.post('/app/profile_user_dice.php',{user:user}, function(data) {
+
+	$('#remove').remove();
+	 
+	$('#block_user_dice').append(data.stavki);
+
+});
+
+}
+
+});
+
+
+$('#wheel_game').on('click', function () {
+	// body...
+
+if ($("#new_test_2 tbody").html() === '') {
+
+$.post('/app/profile_user.php',{user:user}, function(data) {
+	 
+	$('#block_user').append(data.stavki);
+    
+
+});
+
+}
+
+});
+

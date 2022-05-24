@@ -1,0 +1,128 @@
+var RowsCount = 0;
+
+var currentSnapshot= [];
+
+var betsTotal= null;
+var betsAmount= null;
+var lastBet= 0;
+
+
+function buildTable() {
+    let emptyRow = "<tr class='table_bbg'> <td class='none'></td> <td></td> <td class='none'></td> <td></td> <td class='none'></td> <td class='none'></td> <td class='none'></td> <td></td> </tr>";
+    
+    let table= $('#table');
+    table.html("");
+
+    for(let i=0; i<10; i++)
+        table.append(emptyRow);
+}
+
+function showBet(bet) {
+    betsTotal.innerText= bet.id;
+    betsAmount.innerText= bet.cumulativeAmount;
+    let rows= $('#table').children();
+
+    for(let i=rows.length-1; i>0; i--) {
+        let src= rows[i-1].children;
+        let dest= rows[i].children;
+        for(c=0; c<8; c++) {
+            if(c==1)
+                dest[c].innerHTML= src[c].innerHTML;
+            else
+                dest[c].innerText= src[c].innerText;
+            
+            if(c==7)
+                dest[c].className= src[c].className;
+
+        }
+    }
+
+    let cells= rows[0].children;
+
+    let accountRef= "<a href='/?action=user&id=" + bet.userId + "' class='linked'> " + bet.userLogin + " </a>";
+
+    cells[0].innerText= bet.id;
+    cells[1].innerHTML= accountRef;
+    cells[2].innerText= bet.data;
+    cells[3].innerText= bet.stavka.toFixed(2)+' D';
+    cells[4].innerText= bet.chislo;
+    cells[5].innerText= bet.vip+ "x";
+    cells[6].innerText= bet.chance+ "%";
+
+    if (bet.win == 1 || bet.win == 3) {
+        cells[7].innerText= "+" + bet.winner + " D";
+        cells[7].className= "table_content transform green";
+    }
+    else {
+        cells[7].innerText= "-" + bet.winner + " D";
+        cells[7].className= "table_content transform red";
+    }
+}
+
+function updateTable(bets) {
+
+    let rows= $('#table').children();
+    let newBets= bets.filter( function(bet) { return bet.id>lastBet; } )
+    let delay= 1900/newBets.length;
+    
+    for(let i=0; i<newBets.length; i++)
+    {
+        let bet= newBets[i]; 
+        setTimeout(function() { showBet(bet); }, delay*i);
+        lastBet= bet.id;        
+    }
+}
+
+function wsConnect() {
+    ws= new WebSocket("wss://"+window.location.host+":9000/ws/updates");
+    ws.onopen= function() {     
+        buildTable();
+    };
+     
+    ws.onmessage= function (json_msg) { 
+
+        msg= JSON.parse(json_msg.data);
+
+
+        if(msg.subject == 'bets')
+        {
+            currentSnapshot = msg.payload;
+
+            if(RowsCount==0) {
+                //showFullTable(currentSnapshot.slice(0,10));
+                //showAnimatedRows(currentSnapshot.slice(10));
+                updateTable(currentSnapshot);
+            }
+        }
+
+        else if(msg.subject == 'users')
+        {
+            let data= msg.payload
+
+            if(data.usersTotal)
+                $("#gm_users_total").text(data.usersTotal)
+            if(data.usersOnline)
+                $("#gm_users_online").text(data.usersOnline)
+        }
+    };
+
+    ws.onerror= function(ev) {
+        console.log("notifier ws.onerror:\n");
+        console.log(ev);
+    };
+
+    ws.onclose= function(ev) {
+        if(ev.code!=1000)
+        {
+            console.log("notifier ws.onclose(code=\""+ev.code+"\"):\n");
+            setTimeout(wsConnect,2000);
+        }
+    };
+} 
+
+$(document).ready(function () {
+    betsTotal= $("#gm_bets_total")[0];
+    betsAmount= $("#gm_bets_amount")[0];
+ 
+    wsConnect(); 
+});
